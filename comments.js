@@ -1,20 +1,36 @@
-// Create a web server that can respond to requests for /comments.json
-// with a JSON-encoded array of comments, much like your server from the
-// previous exercise.
-//
-// Again, refer to the resources linked to from the course notes if you
-// need a refresher on how to do this.
+// Create web server
+// http://localhost:3000/comments
+// http://localhost:3000/comments/1
+// http://localhost:3000/comments?postId=1
+// http://localhost:3000/comments?postId=1&authorId=1
 
-var http = require('http');
+const jsonServer = require('json-server');
+const server = jsonServer.create();
+const router = jsonServer.router('db.json');
+const port = process.env.PORT || 3000;
 
-var comments = require('./data/comments.json');
+const middlewares = jsonServer.defaults();
 
-http.createServer(function(req, res) {
-  if (req.url === '/comments.json') {
-    res.writeHead(200, {'Content-Type': 'application/json'});
-    res.end(JSON.stringify(comments));
-  } else {
-    res.writeHead(404, {'Content-Type': 'text/plain'});
-    res.end('Not found');
-  }
-}).listen(8080);
+server.use(middlewares);
+
+server.get('/comments', (req, res) => {
+    const postId = req.query.postId;
+    const authorId = req.query.authorId;
+    const comments = router.db.get('comments').value();
+    if (postId && authorId) {
+        const filtered = comments.filter(comment => comment.postId === postId && comment.authorId === authorId);
+        res.jsonp(filtered);
+    } else if (postId) {
+        const filtered = comments.filter(comment => comment.postId === postId);
+        res.jsonp(filtered);
+    } else if (authorId) {
+        const filtered = comments.filter(comment => comment.authorId === authorId);
+        res.jsonp(filtered);
+    } else {
+        res.jsonp(comments);
+    }
+});
+
+server.use(router);
+
+server.listen(port);
