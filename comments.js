@@ -4,8 +4,6 @@
 //
 // Again, refer to the resources linked to from the course notes if you
 // need a refresher on how to do this.
-//
-// -----------------------------------------------------------------------------
 
 var http = require('http');
 
